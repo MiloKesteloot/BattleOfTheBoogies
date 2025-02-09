@@ -1,12 +1,16 @@
 class Player {
     constructor(scene, x, y, z) {
         this.scene = scene;
+        this.xVel = 0;
+        this.yVel = 0;
         this.x = x;
         this.y = y;
         this.z = z;
         this.lastZ = z;
-        this.moveSpeed = 0.02;
-        this.progressSpeed = 0.02;
+        this.moveSpeed = 0.001;
+        this.stopSpeed = 0.001;
+        this.maxSpeed = 0.02;
+        this.progressSpeed = 0.04;
         this.nearClipPlane = -0.001;
         this.cameraScale = 1;
 
@@ -16,15 +20,35 @@ class Player {
     update() {
         this.cameraScale = Math.max(this.scene.sys.game.canvas.width, this.scene.sys.game.canvas.height) * 1;
 
-        const flyDirection = new Phaser.Math.Vector2(0, 0);
-        if (this.keyFlyLeft()) flyDirection.x -= 1;
-        if (this.keyFlyRight()) flyDirection.x += 1;
-        if (this.keyFlyUp()) flyDirection.y -= 1;
-        if (this.keyFlyDown()) flyDirection.y += 1;
-        if (flyDirection.length() != 0) flyDirection.normalize();
-        flyDirection.scale(this.moveSpeed);
-        this.x += flyDirection.x;
-        this.y += flyDirection.y;
+        if (this.keyFlyLeft()) this.xVel -= this.moveSpeed;
+        if (this.keyFlyRight()) this.xVel += this.moveSpeed;
+        if (this.keyFlyUp()) this.yVel -= this.moveSpeed;
+        if (this.keyFlyDown()) this.yVel += this.moveSpeed;
+
+        if (this.xVel > this.maxSpeed) this.xVel = this.maxSpeed;
+        if (this.xVel <-this.maxSpeed) this.xVel =-this.maxSpeed;
+        if (this.yVel > this.maxSpeed) this.yVel = this.maxSpeed;
+        if (this.yVel <-this.maxSpeed) this.yVel =-this.maxSpeed;
+
+        if (this.xVel > 0 && !this.keyFlyRight()) {
+            this.xVel -= this.stopSpeed;
+            if (this.xVel < 0) this.xVel = 0;
+        }
+        if (this.xVel < 0 && !this.keyFlyLeft()) {
+            this.xVel += this.stopSpeed;
+            if (this.xVel > 0) this.xVel = 0;
+        }
+        if (this.yVel > 0 && !this.keyFlyDown()) {
+            this.yVel -= this.stopSpeed;
+            if (this.yVel < 0) this.yVel = 0;
+        }
+        if (this.yVel < 0 && !this.keyFlyUp()) {
+            this.yVel += this.stopSpeed;
+            if (this.yVel > 0) this.yVel = 0;
+        }
+
+        this.x += this.xVel;
+        this.y += this.yVel;
 
 
         const tunnelWidth = this.scene.tunnelWidth/2 - this.shipWidth/2;

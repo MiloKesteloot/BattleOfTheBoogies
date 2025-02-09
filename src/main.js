@@ -1,6 +1,7 @@
-// Code Practice: RNGolf
-// Name: 
-// Date:
+// Name: Milo Kesteloot
+// Game: Battle Of The Boogies
+// Time: 8 hours
+// Creative Tilt Justification: TODO
 
 'use strict'
 

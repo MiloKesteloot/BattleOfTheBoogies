@@ -4,7 +4,7 @@ class Play extends Phaser.Scene {
 
         this.tunnelWidth = 5;
 
-        this.wallTimer = 10;
+        this.wallTimer = -10;
     }
 
     preload() {
@@ -29,6 +29,7 @@ class Play extends Phaser.Scene {
         this.keys.SKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S)
 
         this.player = new Player(this, 0, 0, 0);
+        ThreeDeeObject.player = this.player;
         this.objects = [];
 
         // for (let i = 0; i < this.tunnelWidth; i++) {
@@ -37,21 +38,8 @@ class Play extends Phaser.Scene {
         //     }
         // }
 
-        for (let i = 0; i < this.tunnelWidth; i++) {
-            for (let j = 0; j < this.tunnelWidth; j++) {
-                if (i < 1 || i > 2 || j < 1 || j > 2) {
-                    this.objects.push(new ThreeDeeObject(this, i-Math.floor(this.tunnelWidth/2), j-Math.floor(this.tunnelWidth/2), -10, "wall1"));
-                }
-            }
-        }
-
-        for (let i = 0; i < this.tunnelWidth; i++) {
-            for (let j = 0; j < this.tunnelWidth; j++) {
-                if (i > 0) {
-                    this.objects.push(new ThreeDeeObject(this, i-Math.floor(this.tunnelWidth/2), j-Math.floor(this.tunnelWidth/2), -15, "wall1"));
-                }
-            }
-        }
+      
+        
 
         // this.objects.push(new ThreeDeeObject(this, 0, 0, -5, "wall1"));
         // this.objects.push(new ThreeDeeObject(this, 1, 0, -5, "wall1"));
@@ -81,18 +69,15 @@ class Play extends Phaser.Scene {
     }
 
     spawnObsticals() {
-        if (this.player.lastZ%1 < this.player.z%1) {
-            this.wallTimer--;
-        }
-        if (this.wallTimer === 0) {
-            this.wallTimer = Phaser.Math.Between(5, 10);
+        if (this.wallTimer > this.player.z - 41*2) { // 
+            this.wallTimer -= Phaser.Math.Between(5, 10);
 
             if (Phaser.Math.Between(0, 1) === 0) {
 
-                const x1 = Phaser.Math.Between(0, this.tunnelWidth);
-                const y1 = Phaser.Math.Between(0, this.tunnelWidth);
-                const x2 = Phaser.Math.Between(0, this.tunnelWidth);
-                const y2 = Phaser.Math.Between(0, this.tunnelWidth);
+                const x1 = Phaser.Math.Between(0, this.tunnelWidth-1);
+                const y1 = Phaser.Math.Between(0, this.tunnelWidth-1);
+                const x2 = Phaser.Math.Between(0, this.tunnelWidth-1);
+                const y2 = Phaser.Math.Between(0, this.tunnelWidth-1);
 
                 
 
@@ -100,15 +85,15 @@ class Play extends Phaser.Scene {
                 for (let i = 0; i < this.tunnelWidth; i++) {
                     for (let j = 0; j < this.tunnelWidth; j++) {
                         if (i < Math.min(x1,x2) || i > Math.max(x1,x2) || j < Math.min(y1,y2) || j > Math.max(y1,y2)) {
-                            this.objects.push(new ThreeDeeObject(this, i-Math.floor(this.tunnelWidth/2), j-Math.floor(this.tunnelWidth/2), this.player.z-41*2, "wall1"));
+                            this.objects.push(new Wall(this, i-Math.floor(this.tunnelWidth/2), j-Math.floor(this.tunnelWidth/2), this.wallTimer));
                         }
                     }
                 }
             } else {
-                const x1 = Phaser.Math.Between(0, this.tunnelWidth);
-                const y1 = Phaser.Math.Between(0, this.tunnelWidth);
+                const x1 = Phaser.Math.Between(0, this.tunnelWidth-1);
+                const y1 = Phaser.Math.Between(0, this.tunnelWidth-1);
 
-                this.objects.push(new ThreeDeeObject(this, i-Math.floor(this.tunnelWidth/2), j-Math.floor(this.tunnelWidth/2), this.player.z-41*2, "wall1"));
+                this.objects.push(new Boogie(this, x1-Math.floor(this.tunnelWidth/2), y1-Math.floor(this.tunnelWidth/2), this.wallTimer));
             }
         }
     }
