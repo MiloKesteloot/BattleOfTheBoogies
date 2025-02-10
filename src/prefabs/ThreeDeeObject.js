@@ -102,7 +102,9 @@ class Boogie extends ThreeDeeObject {
         super(scene, x, y, z, "boogie1");
         const boogie = this;
         this.sprite.on('pointerdown', function(pointer) {
-            boogie.destroy();
+            if (!boogie.scene.player.hasBeenHit) {
+                boogie.destroy();
+            }
         });
         this.moveSpeed = Phaser.Math.FloatBetween(0.01, 0.03);
     }

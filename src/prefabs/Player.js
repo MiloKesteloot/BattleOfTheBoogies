@@ -3,6 +3,9 @@ class Player {
         this.scene = scene;
         this.xVel = 0;
         this.yVel = 0;
+        this.zVel = 0;
+        this.targetZVel = -0.04;
+        this.forwardAcceleration = 0.0001;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -10,7 +13,6 @@ class Player {
         this.moveSpeed = 0.001;
         this.stopSpeed = 0.001;
         this.maxSpeed = 0.02;
-        this.progressSpeed = 0.04;
         this.nearClipPlane = -0.001;
         this.cameraScale = 1;
 
@@ -18,17 +20,32 @@ class Player {
 
         this.hasBeenHit = false;
         this.tintGraphics = this.scene.add.graphics();
+        this.tintPrecent = 0.75;
     }
 
     hit() {
         if (this.hasBeenHit) return;
         this.hasBeenHit = true;
-        this.tintGraphics.fillStyle(0xff0000, 0.5);
-        this.tintGraphics.fillRect(-this.scene.sys.game.canvas.width/2, -this.scene.sys.game.canvas.height/2, this.scene.sys.game.canvas.width, this.scene.sys.game.canvas.height);
+        this.zVel = 0.04;
     }
 
     update() {
+
         this.cameraScale = Math.max(this.scene.sys.game.canvas.width, this.scene.sys.game.canvas.height) * 1;
+
+        if (this.hasBeenHit) {
+            this.tintGraphics.clear();
+            this.tintGraphics.fillStyle(0xff0000, this.tintPrecent);
+            this.tintGraphics.fillRect(-this.scene.sys.game.canvas.width/2, -this.scene.sys.game.canvas.height/2, this.scene.sys.game.canvas.width, this.scene.sys.game.canvas.height);
+            const tintFinish = 0.25;
+            if (this.tintPrecent > tintFinish) {
+                this.tintPrecent -= 0.003;
+                if (this.tintPrecent < tintFinish) {
+                    this.tintPrecent = tintFinish;
+                }
+            }
+
+        }
 
         if (this.keyFlyLeft()) this.xVel -= this.moveSpeed;
         if (this.keyFlyRight()) this.xVel += this.moveSpeed;
@@ -56,9 +73,20 @@ class Player {
             this.yVel += this.stopSpeed;
             if (this.yVel > 0) this.yVel = 0;
         }
+        if (!this.hasBeenHit) {
+            if (this.zVel > this.targetZVel) {
+                this.zVel -= this.forwardAcceleration;
+            }
+        }
+        if (this.zVel > 0) {
+            this.zVel *= 0.99;
+            if (this.zVel < 0) this.zVel = 0;
+        }
 
         this.x += this.xVel;
         this.y += this.yVel;
+        this.lastZ = this.z;
+        this.z += this.zVel;
 
 
         const tunnelWidth = this.scene.tunnelWidth/2 - this.shipWidth/2;
@@ -75,21 +103,10 @@ class Player {
         if (this.y > tunnelWidth) {
             this.y = tunnelWidth
         }
-
-        this.lastZ = this.z;
-
-        if (!this.keyFlyForward()) {
-            this.z -= this.progressSpeed;
-        }
-        if (this.keyFlyBackward()) {
-            this.z += this.progressSpeed;
-        }
     }
 
-    keyFlyLeft() { return this.scene.keys.left.isDown || this.scene.keys.AKey.isDown; }
-    keyFlyRight() { return this.scene.keys.right.isDown || this.scene.keys.DKey.isDown; }
-    keyFlyUp() { return this.scene.keys.up.isDown || this.scene.keys.WKey.isDown; }
-    keyFlyDown() { return this.scene.keys.down.isDown || this.scene.keys.SKey.isDown; }
-    keyFlyForward() { return this.scene.keys.space.isDown; }
-    keyFlyBackward() { return this.scene.keys.shift.isDown; }
+    keyFlyLeft() { if (this.hasBeenHit) return false; return this.scene.keys.left.isDown || this.scene.keys.AKey.isDown; }
+    keyFlyRight() { if (this.hasBeenHit) return false; return this.scene.keys.right.isDown || this.scene.keys.DKey.isDown; }
+    keyFlyUp() { if (this.hasBeenHit) return false; return this.scene.keys.up.isDown || this.scene.keys.WKey.isDown; }
+    keyFlyDown() { if (this.hasBeenHit) return false; return this.scene.keys.down.isDown || this.scene.keys.SKey.isDown; }
 }
