@@ -15,6 +15,16 @@ class Player {
         this.cameraScale = 1;
 
         this.shipWidth = 0.8;
+
+        this.hasBeenHit = false;
+        this.tintGraphics = this.scene.add.graphics();
+    }
+
+    hit() {
+        if (this.hasBeenHit) return;
+        this.hasBeenHit = true;
+        this.tintGraphics.fillStyle(0xff0000, 0.5);
+        this.tintGraphics.fillRect(-this.scene.sys.game.canvas.width/2, -this.scene.sys.game.canvas.height/2, this.scene.sys.game.canvas.width, this.scene.sys.game.canvas.height);
     }
 
     update() {

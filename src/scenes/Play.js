@@ -47,7 +47,6 @@ class Play extends Phaser.Scene {
     }
 
     update() {
-
         this.cameras.main.scrollX = -this.cameras.main.width / 2;
         this.cameras.main.scrollY = -this.cameras.main.height / 2;
 
@@ -70,7 +69,7 @@ class Play extends Phaser.Scene {
 
     spawnObsticals() {
         if (this.wallTimer > this.player.z - 41*2) { // 
-            this.wallTimer -= Phaser.Math.Between(5, 10);
+            this.wallTimer -= Phaser.Math.Between(7, 12);
 
             if (Phaser.Math.Between(0, 1) === 0) {
 
@@ -90,10 +89,12 @@ class Play extends Phaser.Scene {
                     }
                 }
             } else {
-                const x1 = Phaser.Math.Between(0, this.tunnelWidth-1);
-                const y1 = Phaser.Math.Between(0, this.tunnelWidth-1);
+                for (let i = 0; i < Phaser.Math.Between(1, 2); i++) {
+                    const x1 = Phaser.Math.Between(0, this.tunnelWidth-1);
+                    const y1 = Phaser.Math.Between(0, this.tunnelWidth-1);
 
-                this.objects.push(new Boogie(this, x1-Math.floor(this.tunnelWidth/2), y1-Math.floor(this.tunnelWidth/2), this.wallTimer));
+                    this.objects.push(new Boogie(this, x1-Math.floor(this.tunnelWidth/2), y1-Math.floor(this.tunnelWidth/2), this.wallTimer));
+                }
             }
         }
     }

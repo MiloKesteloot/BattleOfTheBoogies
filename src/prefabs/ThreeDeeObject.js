@@ -9,11 +9,21 @@ class ThreeDeeObject {
         this.z = z;
         this.sprite = scene.add.sprite(0, 0, spriteKey);
         this.sprite.setDepth(this.z);
+        this.sprite.setInteractive();
         this.updateVisualPosition();
     }
 
     update() {
         this.updateVisualPosition();
+        if (this.z > this.scene.player.z - 0.1) {
+            if (this.scene.player.x > this.x-0.5 &&
+                this.scene.player.x < this.x+0.5 &&
+                this.scene.player.y > this.y-0.5 &&
+                this.scene.player.y < this.y+0.5) {
+                this.scene.player.hit();
+                console.log(this)
+            }
+        }
     }
 
     destroy() {
@@ -90,14 +100,36 @@ class Wall extends ThreeDeeObject {
 class Boogie extends ThreeDeeObject {
     constructor(scene, x, y, z) {
         super(scene, x, y, z, "boogie1");
-        this.sprite.setInteractive();
+        const boogie = this;
         this.sprite.on('pointerdown', function(pointer) {
-            this.destroy();
+            boogie.destroy();
         });
+        this.moveSpeed = Phaser.Math.FloatBetween(0.01, 0.03);
     }
 
     update() {
-        // TODO make it move around
+        if (this.z > this.scene.player.z - 5) {
+            const vecTo = new Phaser.Math.Vector2(this.scene.player.x - this.x, this.scene.player.y - this.y);
+            if (vecTo.length() > 0.01) {
+                vecTo.normalize();
+                vecTo.scale(this.moveSpeed);
+                this.x += vecTo.x;
+                this.y += vecTo.y;
+            }
+        } else {
+            if (this.rp === undefined || (new Phaser.Math.Vector2(this.rp.x - this.x, this.rp.y - this.y)).length() < 0.1) {
+                this.randomPos();
+            }
+            const vecTo = new Phaser.Math.Vector2(this.rp.x - this.x, this.rp.y - this.y);
+            vecTo.normalize();
+            vecTo.scale(this.moveSpeed);
+            this.x += vecTo.x;
+            this.y += vecTo.y;
+        }
         super.update();
+    }
+
+    randomPos() {
+        this.rp = new Phaser.Math.Vector2(Phaser.Math.FloatBetween(-this.scene.tunnelWidth/2, this.scene.tunnelWidth/2), Phaser.Math.Between(-this.scene.tunnelWidth/2, this.scene.tunnelWidth/2));
     }
 }
