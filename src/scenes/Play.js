@@ -5,6 +5,10 @@ class Play extends Phaser.Scene {
         this.tunnelWidth = 5;
 
         this.wallTimer = -10;
+
+        this.timeCounter = 0;
+
+        this.updateRate = 1/180;
     }
 
     preload() {
@@ -46,22 +50,29 @@ class Play extends Phaser.Scene {
 
     }
 
-    update() {
+    update(_, dt) {
+        dt /= 1000;
+
+        this.timeCounter += dt;
+
         this.cameras.main.scrollX = -this.cameras.main.width / 2;
         this.cameras.main.scrollY = -this.cameras.main.height / 2;
 
-        this.player.update();
+        while (this.timeCounter >= this.updateRate) {
+            this.timeCounter -= this.updateRate;
         
-        this.objects.forEach(object => {
-            if (object.z - this.player.z > this.player.nearClipPlane) {
-                object.destroy();
-            }
-        });
-        this.objects.forEach(object => object.update());
+            this.player.update();
+            
+            this.objects.forEach(object => {
+                if (object.z - this.player.z > this.player.nearClipPlane) {
+                    object.destroy();
+                }
+            });
+            this.objects.forEach(object => object.update());
+            this.spawnObsticals();
+        }
 
         this.drawWalls();
-
-        this.spawnObsticals();
 
         this.target.x = this.getMouseX();
         this.target.y = this.getMouseY();
