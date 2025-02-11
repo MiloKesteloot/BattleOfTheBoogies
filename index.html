@@ -8,18 +8,35 @@
     <script src="./src/prefabs/Player.js"></script>
     <script src="./src/prefabs/ThreeDeeObject.js"></script>
     <script src="./src/scenes/Play.js"></script>
+    <script src="./src/scenes/Credits.js"></script>
     <script src="./src/main.js"></script>
     <style>
+        @font-face {
+            font-family: 'seg';
+            src: url('assets/txt/seg.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        /* credit to u/IdealNarrow on Reddit */
+        @font-face {
+            font-family: 'pico';
+            src: url('assets/txt/pico.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        /* credit to Simbax on FontStruct */
         body {
             margin: 0;
             overflow: hidden;
         }
         canvas {
             margin: 0 !important;
+            cursor: none;
         }
     </style>
 </head>
 <body>
-    
+    <div style="font-family:'seg'; position:absolute; left:-1000px; visibility:hidden;">.</div>
+    <div style="font-family:'pico'; position:absolute; left:-1000px; visibility:hidden;">.</div>
 </body>
 </html>

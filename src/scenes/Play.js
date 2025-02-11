@@ -1,14 +1,6 @@
 class Play extends Phaser.Scene {
     constructor() {
         super('playScene');
-
-        this.tunnelWidth = 5;
-
-        this.wallTimer = -10;
-
-        this.timeCounter = 0;
-
-        this.updateRate = 1/180;
     }
 
     preload() {
@@ -28,9 +20,27 @@ class Play extends Phaser.Scene {
 
         this.load.path = './assets/sfx/';
         this.load.audio('backgroundMusic', 'music.wav');
+        this.load.audio('airlock', 'airlock.mp3');
+        this.load.audio('shoot', 'shoot.mp3');
+        this.load.audio('bonk', 'bonk.mp3');
+        this.load.audio('squelch', 'squelch.mp3');
     }
 
     create() {
+
+        this.tunnelWidth = 5;
+
+        this.wallTimer = -10;
+
+        this.timeCounter = 0;
+
+        this.updateRate = 1/180;
+
+        const scene = this;
+
+        addEventListener("mousedown", (event) => {
+            scene.sound.add("shoot").play();
+        });
 
         this.backgroundMusic = this.sound.add("backgroundMusic");
         this.backgroundMusic.setLoop(true);
@@ -55,6 +65,8 @@ class Play extends Phaser.Scene {
         this.keys.DKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
         this.keys.WKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W)
         this.keys.SKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S)
+        this.keys.ESCKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+        this.keys.RKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R)
 
         this.player = new Player(this, 0, 0, 0);
         ThreeDeeObject.player = this.player;
@@ -73,9 +85,35 @@ class Play extends Phaser.Scene {
         // this.objects.push(new ThreeDeeObject(this, 0, 0, -5, "wall1"));
         // this.objects.push(new ThreeDeeObject(this, 1, 0, -5, "wall1"));
 
+        this.score = 0;
+
+        this.scoreTexts = [];
+        const charCount = 8;
+        const charSpacing = 40;
+        for (let i = 0; i < charCount; i++) {
+            this.add.text((i-charCount/2+0.5)*charSpacing, -this.sys.canvas.height/2+15, '8', {
+                fontFamily: 'seg',
+                fontSize: '64px',
+                color: '#222222'
+            }).setOrigin(0.5, 0);
+
+            this.scoreTexts.push(
+                this.add.text((charCount-i-charCount/2-0.5)*charSpacing, -this.sys.canvas.height/2+15, '', {
+                    fontFamily: 'seg',
+                    fontSize: '64px',
+                    color: '#ff0000'
+                }).setOrigin(0.5, 0).setDepth(2)
+            );
+        }
+        this.scoreTexts[0].text = "0";
     }
 
     update(_, dt) {
+
+        if (Phaser.Input.Keyboard.JustDown(this.keys.RKey)) {
+            this.scene.start('playScene');
+        }
+
         dt /= 1000;
 
         this.timeCounter += dt;
@@ -85,7 +123,28 @@ class Play extends Phaser.Scene {
 
         while (this.timeCounter >= this.updateRate) {
 
-            this.updateRate -= 0.0000001;
+            if (this.player.zVel === 0 || this.player.hasBeenHit) {
+                if (Phaser.Input.Keyboard.JustDown(this.keys.ESCKey)) {
+                    this.scene.start('creditsScene');
+                }
+            }
+
+            if (this.player.zVel !== 0) {
+                this.updateRate *= 0.5 ** (1/180 * 1/60)
+
+                if (!this.player.hasBeenHit) {
+                    this.score += 1;
+                    let ts = this.score;
+                    let i = 0;
+                    while (ts > 0) {
+                        if (i > 0) {
+                            this.scoreTexts[i].text = ts%10;
+                        }
+                        i++;
+                        ts = Math.floor(ts/10);
+                    }
+                }
+            }
 
             this.timeCounter -= this.updateRate;
         
@@ -96,6 +155,7 @@ class Play extends Phaser.Scene {
                     object.destroy();
                 }
             });
+
             this.objects.forEach(object => object.update());
             this.spawnObsticals();
         }
@@ -219,19 +279,16 @@ class Play extends Phaser.Scene {
         return this.input.mousePointer.y - this.sys.game.canvas.height/2;
     }
 
-    // TODO PA
+    // Common function
     dimColor(color, factor) {
-        // Extract RGB components
         let r = (color >> 16) & 255;
         let g = (color >> 8) & 255;
         let b = color & 255;
     
-        // Dim each component
         r = Math.round(r * factor);
         g = Math.round(g * factor);
         b = Math.round(b * factor);
     
-        // Recombine into a single value
         return (r << 16) | (g << 8) | b;
     }
 }

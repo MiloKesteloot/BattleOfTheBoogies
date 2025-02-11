@@ -1,5 +1,5 @@
 class ThreeDeeObject {
-    constructor(scene, x, y, z, spriteKey) {
+    constructor(scene, x, y, z, spriteKey, hitEffect = null, hitVolume = 1) {
 
         ThreeDeeObject.player = scene.player;
 
@@ -10,17 +10,22 @@ class ThreeDeeObject {
         this.sprite = scene.add.sprite(0, 0, spriteKey);
         this.sprite.setDepth(this.z);
         this.sprite.setInteractive();
+        this.hitEffect = hitEffect;
+        this.hitVolume = hitVolume;
         this.updateVisualPosition();
     }
 
     update() {
         this.updateVisualPosition();
-        if (this.z > this.scene.player.z - 0.1) {
-            if (this.scene.player.x > this.x-0.5 &&
-                this.scene.player.x < this.x+0.5 &&
-                this.scene.player.y > this.y-0.5 &&
-                this.scene.player.y < this.y+0.5) {
-                this.scene.player.hit();
+        if (this.z > this.scene.player.z - 0.1 &&
+            !this.scene.player.hasBeenHit &&
+            this.scene.player.x > this.x-0.5 &&
+            this.scene.player.x < this.x+0.5 &&
+            this.scene.player.y > this.y-0.5 &&
+            this.scene.player.y < this.y+0.5) {
+            this.scene.player.hit();
+            if (this.hitEffect !== null) {
+                this.scene.sound.add(this.hitEffect).setVolume(this.hitVolume).play();
             }
         }
     }
@@ -92,13 +97,13 @@ class ThreeDeeObject {
 
 class Wall extends ThreeDeeObject {
     constructor(scene, x, y, z) {
-        super(scene, x, y, z, "wall1");
+        super(scene, x, y, z, "wall1", "bonk", 0.2);
     }
 }
 
 class Boogie extends ThreeDeeObject {
     constructor(scene, x, y, z) {
-        super(scene, x, y, z, "boogie1");
+        super(scene, x, y, z, "boogie1", "squelch");
         const boogie = this;
         this.sprite.on('pointerdown', function(pointer) {
             if (!boogie.scene.player.hasBeenHit) {
@@ -133,7 +138,11 @@ class Boogie extends ThreeDeeObject {
     }
 
     randomPos() {
-        this.rp = new Phaser.Math.Vector2(Phaser.Math.FloatBetween(-this.scene.tunnelWidth/2, this.scene.tunnelWidth/2), Phaser.Math.Between(-this.scene.tunnelWidth/2, this.scene.tunnelWidth/2));
+        this.rp = new Phaser.Math.Vector2(this.randomNum(), this.randomNum());
+    }
+
+    randomNum() {
+        return Phaser.Math.FloatBetween(-this.scene.tunnelWidth/2+0.5, this.scene.tunnelWidth/2-0.5);
     }
 }
 
@@ -148,6 +157,7 @@ class DoorButton extends ThreeDeeObject {
             doorButton.rightDoor.slide = slideSpeed;
             doorButton.destroy();
             doorButton.scene.player.start();
+            doorButton.scene.sound.add('airlock').play();
         });
 
         this.leftDoor  = new DoorSide(this.scene, 0, 0, this.z - 0.01, "doorLeft");
