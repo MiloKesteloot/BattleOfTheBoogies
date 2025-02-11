@@ -111,6 +111,7 @@ class Play extends Phaser.Scene {
     update(_, dt) {
 
         if (Phaser.Input.Keyboard.JustDown(this.keys.RKey)) {
+            this.backgroundMusic.stop();
             this.scene.start('playScene');
         }
 
@@ -125,6 +126,7 @@ class Play extends Phaser.Scene {
 
             if (this.player.zVel === 0 || this.player.hasBeenHit) {
                 if (Phaser.Input.Keyboard.JustDown(this.keys.ESCKey)) {
+                    this.backgroundMusic.stop();
                     this.scene.start('creditsScene');
                 }
             }
