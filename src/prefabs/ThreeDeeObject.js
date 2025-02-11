@@ -21,7 +21,6 @@ class ThreeDeeObject {
                 this.scene.player.y > this.y-0.5 &&
                 this.scene.player.y < this.y+0.5) {
                 this.scene.player.hit();
-                console.log(this)
             }
         }
     }
@@ -107,6 +106,8 @@ class Boogie extends ThreeDeeObject {
             }
         });
         this.moveSpeed = Phaser.Math.FloatBetween(0.01, 0.03);
+
+        this.sprite.anims.play('boogie_animation');
     }
 
     update() {
@@ -133,5 +134,43 @@ class Boogie extends ThreeDeeObject {
 
     randomPos() {
         this.rp = new Phaser.Math.Vector2(Phaser.Math.FloatBetween(-this.scene.tunnelWidth/2, this.scene.tunnelWidth/2), Phaser.Math.Between(-this.scene.tunnelWidth/2, this.scene.tunnelWidth/2));
+    }
+}
+
+class DoorButton extends ThreeDeeObject {
+    constructor(scene) {
+        super(scene, 0, 0, -3, "doorButton");
+
+        const doorButton = this;
+        this.sprite.on('pointerdown', function(pointer) {
+            const slideSpeed = 0.01;
+            doorButton.leftDoor.slide = -slideSpeed;
+            doorButton.rightDoor.slide = slideSpeed;
+            doorButton.destroy();
+            doorButton.scene.player.start();
+        });
+
+        this.leftDoor  = new DoorSide(this.scene, 0, 0, this.z - 0.01, "doorLeft");
+        this.rightDoor = new DoorSide(this.scene, 0, 0, this.z - 0.01, "doorRight");
+
+        this.scene.objects.push(this.leftDoor);
+        this.scene.objects.push(this.rightDoor);
+    }
+
+    update() {
+        super.update();
+        this.leftDoor.update();
+    }
+}
+
+class DoorSide extends ThreeDeeObject {
+    constructor(scene, x, y, z, sprite) {
+        super(scene, x, y, z, sprite);
+        this.slide = 0;
+    }
+
+    update() {
+        this.x += this.slide;
+        super.update();
     }
 }

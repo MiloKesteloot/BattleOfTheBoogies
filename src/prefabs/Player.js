@@ -4,7 +4,7 @@ class Player {
         this.xVel = 0;
         this.yVel = 0;
         this.zVel = 0;
-        this.targetZVel = -0.04;
+        this.targetZVel = 0;
         this.forwardAcceleration = 0.0001;
         this.x = x;
         this.y = y;
@@ -27,6 +27,11 @@ class Player {
         if (this.hasBeenHit) return;
         this.hasBeenHit = true;
         this.zVel = 0.04;
+    }
+
+    start() {
+        this.targetZVel = -0.04;
+        console.log("start!");
     }
 
     update() {
@@ -73,7 +78,7 @@ class Player {
             this.yVel += this.stopSpeed;
             if (this.yVel > 0) this.yVel = 0;
         }
-        if (!this.hasBeenHit) {
+        if (!this.hasBeenHit && this.targetZVel != 0) {
             if (this.zVel > this.targetZVel) {
                 this.zVel -= this.forwardAcceleration;
             }

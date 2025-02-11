@@ -13,12 +13,36 @@ class Play extends Phaser.Scene {
 
     preload() {
         this.load.path = './assets/img/';
-        this.load.image('boogie1', 'boogie1.png');
+        this.load.spritesheet('boogie1', 'boogie1.png', {
+            frameWidth: 15,
+            frameHeight: 15,
+            startFrame: 0,
+            endFrame: 1
+        })
         this.load.image('wall1', 'wall1.png');
         this.load.image('target', 'target.png');
+
+        this.load.image('doorButton', 'doorButton.png');
+        this.load.image('doorLeft', 'doorLeft.png');
+        this.load.image('doorRight', 'doorRight.png');
+
+        this.load.path = './assets/sfx/';
+        this.load.audio('backgroundMusic', 'music.wav');
     }
 
     create() {
+
+        this.backgroundMusic = this.sound.add("backgroundMusic");
+        this.backgroundMusic.setLoop(true);
+        this.backgroundMusic.setVolume(0.4);
+        this.backgroundMusic.play();
+
+        this.anims.create({
+            key: 'boogie_animation',
+            frames: this.anims.generateFrameNumbers('boogie1', { start: 0, end: 1, first: 0}),
+            frameRate: 4,
+            repeat: -1,
+        });
 
         this.target = this.add.sprite(this.getMouseX(), this.getMouseY(), 'target');
         this.target.setScale(9);
@@ -35,6 +59,7 @@ class Play extends Phaser.Scene {
         this.player = new Player(this, 0, 0, 0);
         ThreeDeeObject.player = this.player;
         this.objects = [];
+        this.objects.push(new DoorButton(this));
 
         // for (let i = 0; i < this.tunnelWidth; i++) {
         //     for (let j = 0; j < this.tunnelWidth; j++) {
@@ -59,6 +84,9 @@ class Play extends Phaser.Scene {
         this.cameras.main.scrollY = -this.cameras.main.height / 2;
 
         while (this.timeCounter >= this.updateRate) {
+
+            this.updateRate -= 0.0000001;
+
             this.timeCounter -= this.updateRate;
         
             this.player.update();
@@ -104,7 +132,8 @@ class Play extends Phaser.Scene {
                     const x1 = Phaser.Math.Between(0, this.tunnelWidth-1);
                     const y1 = Phaser.Math.Between(0, this.tunnelWidth-1);
 
-                    this.objects.push(new Boogie(this, x1-Math.floor(this.tunnelWidth/2), y1-Math.floor(this.tunnelWidth/2), this.wallTimer));
+                    const boogie = new Boogie(this, x1-Math.floor(this.tunnelWidth/2), y1-Math.floor(this.tunnelWidth/2), this.wallTimer);
+                    this.objects.push(boogie);
                 }
             }
         }
