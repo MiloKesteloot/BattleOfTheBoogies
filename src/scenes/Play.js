@@ -56,6 +56,7 @@ class Play extends Phaser.Scene {
 
         this.target = this.add.sprite(this.getMouseX(), this.getMouseY(), 'target');
         this.target.setScale(9);
+        this.target.setAlpha(0.5);
 
         this.graphics = this.add.graphics();
         this.graphics.setDepth(-Infinity);
