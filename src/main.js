@@ -1,6 +1,6 @@
 // Name: Milo Kesteloot
 // Game: Battle Of The Boogies
-// Time: 8 hours
+// Time: 20 hours
 // Creative Tilt Justification:
 //    Technology Justification: The 3D aspects of my technology were incredibly difficult to implument and I think are worthey of an extra point.
 //         Style Justification: The 3D aspect of my game also looks great and unique and I think is worth of another point.
