@@ -13,7 +13,7 @@ class Credits extends Phaser.Scene {
         tintGraphics.fillRect(-this.sys.game.canvas.width/2, -this.sys.game.canvas.height/2, this.sys.game.canvas.width, this.sys.game.canvas.height);
 
         this.add.text(0, 0, 'CREDITS\n\nProgramming: Milo Kesteloot\nArt: Milo Kesteloot\nScore Font: u/IdealNarrow on Reddit\nSound: Pixabay\nMusic: FakesFate on looperman.com\n\nESC to return', {
-            fontFamily: 'pico',
+            fontFamily: 'picoo',
             fontSize: '64px',
             color: '#ff0000'
         }).setOrigin(0.5, 0.5).setDepth(2)

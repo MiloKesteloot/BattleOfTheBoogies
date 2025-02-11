@@ -93,6 +93,8 @@ class Player {
         this.lastZ = this.z;
         this.z += this.zVel;
 
+        this.scene.cameras.main.setAngle(-this.xVel*50)
+
 
         const tunnelWidth = this.scene.tunnelWidth/2 - this.shipWidth/2;
 

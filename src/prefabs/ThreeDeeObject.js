@@ -17,17 +17,6 @@ class ThreeDeeObject {
 
     update() {
         this.updateVisualPosition();
-        if (this.z > this.scene.player.z - 0.1 &&
-            !this.scene.player.hasBeenHit &&
-            this.scene.player.x > this.x-0.5 &&
-            this.scene.player.x < this.x+0.5 &&
-            this.scene.player.y > this.y-0.5 &&
-            this.scene.player.y < this.y+0.5) {
-            this.scene.player.hit();
-            if (this.hitEffect !== null) {
-                this.scene.sound.add(this.hitEffect).setVolume(this.hitVolume).play();
-            }
-        }
     }
 
     destroy() {
@@ -39,7 +28,6 @@ class ThreeDeeObject {
     }
 
     updateVisualPosition() {
-        
         const player = this.scene.player;
 
         let { x, y, scale } = ThreeDeeObject.ThreeDeeToTwoDee(this.x, this.y, this.z)
@@ -47,18 +35,6 @@ class ThreeDeeObject {
         this.sprite.x = x;
         this.sprite.y = y;
         this.sprite.setScale(scale);
-
-        let distZ = Math.abs(this.z - this.scene.player.z);
-        distZ /= 80;
-
-        distZ = 1 - distZ;
-
-        distZ *= 5;
-        if (distZ < 0) distZ = 0;
-        if (distZ > 1) distZ = 1;
-
-        this.sprite.setTint(this.scene.dimColor(0xFFFFFF, distZ));
-        this.sprite.setAlpha(1 * distZ);
     }
 
     setX(x) {
@@ -95,18 +71,55 @@ class ThreeDeeObject {
     }
 }
 
-class Wall extends ThreeDeeObject {
+class PhysicalThreeDeeObject extends ThreeDeeObject {
+    update() {
+        super.update();
+        if (this.z > this.scene.player.z - 0.1 &&
+            !this.scene.player.hasBeenHit &&
+            this.scene.player.x > this.x-0.5 &&
+            this.scene.player.x < this.x+0.5 &&
+            this.scene.player.y > this.y-0.5 &&
+            this.scene.player.y < this.y+0.5) {
+            this.scene.player.hit();
+            if (this.hitEffect !== null) {
+                this.scene.sound.add(this.hitEffect).setVolume(this.hitVolume).play();
+            }
+        }
+    }
+
+    updateVisualPosition() {
+        super.updateVisualPosition();
+        let distZ = Math.abs(this.z - this.scene.player.z);
+        distZ /= 80;
+
+        distZ = 1 - distZ;
+
+        distZ *= 5;
+        if (distZ < 0) distZ = 0;
+        if (distZ > 1) distZ = 1;
+
+        this.sprite.setTint(this.scene.dimColor(0xFFFFFF, distZ));
+        this.sprite.setAlpha(1 * distZ);
+    }
+}
+
+class Wall extends PhysicalThreeDeeObject {
     constructor(scene, x, y, z) {
         super(scene, x, y, z, "wall1", "bonk", 0.2);
     }
 }
 
-class Boogie extends ThreeDeeObject {
+class Boogie extends PhysicalThreeDeeObject {
     constructor(scene, x, y, z) {
         super(scene, x, y, z, "boogie1", "squelch");
         const boogie = this;
         this.sprite.on('pointerdown', function(pointer) {
             if (!boogie.scene.player.hasBeenHit) {
+                for (let i = 0; i < 100; i++) {
+                    boogie.scene.objects.push(
+                        new Particle(boogie.scene, boogie.x, boogie.y, boogie.z, ["particle-green-1", "particle-green-2"], ...Particle.randomXYZ(0.000, 0.03), 10000)
+                    );
+                }
                 boogie.destroy();
             }
         });
@@ -126,7 +139,7 @@ class Boogie extends ThreeDeeObject {
             }
         } else {
             if (this.rp === undefined || (new Phaser.Math.Vector2(this.rp.x - this.x, this.rp.y - this.y)).length() < 0.1) {
-                this.randomPos();
+                this.randomPos(this.scene);
             }
             const vecTo = new Phaser.Math.Vector2(this.rp.x - this.x, this.rp.y - this.y);
             vecTo.normalize();
@@ -138,11 +151,11 @@ class Boogie extends ThreeDeeObject {
     }
 
     randomPos() {
-        this.rp = new Phaser.Math.Vector2(this.randomNum(), this.randomNum());
+        this.rp = new Phaser.Math.Vector2(Boogie.randomNum(this.scene), Boogie.randomNum(this.scene));
     }
 
-    randomNum() {
-        return Phaser.Math.FloatBetween(-this.scene.tunnelWidth/2+0.5, this.scene.tunnelWidth/2-0.5);
+    static randomNum(scene) {
+        return Phaser.Math.FloatBetween(-scene.tunnelWidth/2+0.5, scene.tunnelWidth/2-0.5);
     }
 }
 
@@ -182,5 +195,43 @@ class DoorSide extends ThreeDeeObject {
     update() {
         this.x += this.slide;
         super.update();
+    }
+}
+
+class Particle extends ThreeDeeObject {
+    constructor(scene, x, y, z, sprites, vx, vy, vz, life) {
+        super(scene, x, y, z, sprites[Math.floor(Math.random()*sprites.length)]);
+        this.vx = vx;
+        this.vy = vy;
+        this.vz = vz;
+        this.life = life;
+        this.sprite.setAlpha(Math.random());
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.z += this.vz;
+        if (this.x > this.scene.tunnelWidth/2 || this.x < -this.scene.tunnelWidth/2 ||
+            this.y > this.scene.tunnelWidth/2 || this.y < -this.scene.tunnelWidth/2) {
+            this.vx = 0;
+            this.vy = 0;
+            this.vz = 0;
+        }
+        this.life -= 1;
+        super.update();
+        if (this.life <= 0) {
+            this.destroy();
+        }
+    }
+
+    static randomXYZ(minR, maxR) {
+        let v;
+        while (v === undefined || v.length() > 1) {
+            v = new Phaser.Math.Vector3(Math.random()*2-1, Math.random()*2-1, Math.random()*2-1);
+        }
+        v.normalize();
+        v.scale(Phaser.Math.FloatBetween(minR, maxR));
+        return [v.x, v.y, v.z];
     }
 }

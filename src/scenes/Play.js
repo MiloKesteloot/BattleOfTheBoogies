@@ -18,6 +18,10 @@ class Play extends Phaser.Scene {
         this.load.image('doorLeft', 'doorLeft.png');
         this.load.image('doorRight', 'doorRight.png');
 
+        this.load.image('particle-green-1', 'particle-green-1.png');
+        this.load.image('particle-green-2', 'particle-green-2.png');
+        this.load.image('particle-white-1', 'particle-white-1.png');
+
         this.load.path = './assets/sfx/';
         this.load.audio('backgroundMusic', 'music.wav');
         this.load.audio('airlock', 'airlock.mp3');
@@ -29,11 +33,9 @@ class Play extends Phaser.Scene {
     create() {
 
         this.tunnelWidth = 5;
-
         this.wallTimer = -10;
-
+        this.particleTimer = -6;
         this.timeCounter = 0;
-
         this.updateRate = 1/180;
 
         const scene = this;
@@ -170,7 +172,11 @@ class Play extends Phaser.Scene {
     }
 
     spawnObsticals() {
-        if (this.wallTimer > this.player.z - 41*2) { // 
+        if (this.particleTimer > this.player.z - 30) { 
+            this.particleTimer -= Phaser.Math.Between(1, 4);
+            this.objects.push(new Particle(this, Boogie.randomNum(this), Boogie.randomNum(this), this.particleTimer, ["particle-white-1"], 0, 0, 0.1, 10000)) // 
+        }
+        if (this.wallTimer > this.player.z - 41*2) {
             this.wallTimer -= Phaser.Math.Between(7, 12);
 
             if (Phaser.Math.Between(0, 1) === 0) {
