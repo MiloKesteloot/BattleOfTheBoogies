@@ -134,7 +134,7 @@ class Play extends Phaser.Scene {
                 }
             }
 
-            if (this.player.zVel !== 0) {
+            if (this.player.zVel !== 0 && !this.player.hasBeenHit) {
                 this.updateRate *= 0.5 ** (1/180 * 1/60)
 
                 if (!this.player.hasBeenHit) {

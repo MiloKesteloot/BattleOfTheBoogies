@@ -21,6 +21,7 @@ class Player {
         this.hasBeenHit = false;
         this.tintGraphics = this.scene.add.graphics();
         this.tintPrecent = 0.75;
+        this.addedDeathText = false;
     }
 
     hit() {
@@ -31,7 +32,6 @@ class Player {
 
     start() {
         this.targetZVel = -0.04;
-        console.log("start!");
     }
 
     update() {
@@ -50,6 +50,14 @@ class Player {
                 }
             }
 
+            if (!this.addedDeathText) {
+                this.addedDeathText = true;
+                this.scene.add.text(0, this.scene.sys.game.canvas.height/2-15, 'r to restart', {
+                    fontFamily: 'pico',
+                    fontSize: '64px',
+                    color: '#ff0000'
+                }).setOrigin(0.5, 1).setDepth(2)
+            }
         }
 
         if (this.keyFlyLeft()) this.xVel -= this.moveSpeed;
